@@ -70,9 +70,13 @@ class TimerViewModel(
             totalMillis = totalMillis
         )
 
+        // Show persistent notification
+        notificationService.showTimerRunning(phase, remainingMillis, totalMillis)
+
         timerJob?.cancel()
         timerJob = viewModelScope.launch {
             var remaining = remainingMillis
+            var lastNotificationUpdate = remaining
             while (remaining > 0) {
                 delay(100L)
                 remaining -= 100L
@@ -81,12 +85,17 @@ class TimerViewModel(
                     remainingMillis = remaining.coerceAtLeast(0L),
                     totalMillis = totalMillis
                 )
+                // Update notification every second
+                if (lastNotificationUpdate - remaining >= 1000L) {
+                    notificationService.updateTimerProgress(phase, remaining, totalMillis)
+                    lastNotificationUpdate = remaining
+                }
             }
             _timerState.value = TimerState.Completed(
                 phase = phase,
                 totalMillis = totalMillis
             )
-            // Vibrate directly and show notification
+            // Vibrate and show completion notification
             vibrationService.vibrateTimerComplete()
             notificationService.notifyTimerComplete(phase)
         }
@@ -94,6 +103,7 @@ class TimerViewModel(
 
     fun pause() {
         timerJob?.cancel()
+        notificationService.hideTimerProgress()
         val currentState = _timerState.value
         if (currentState is TimerState.Running) {
             _timerState.value = TimerState.Paused(
@@ -106,6 +116,7 @@ class TimerViewModel(
 
     fun reset() {
         timerJob?.cancel()
+        notificationService.hideTimerProgress()
         val currentPhase = _timerState.value.phase
         val duration = getDurationForPhase(currentPhase)
         _timerState.value = TimerState.Idle(
@@ -117,6 +128,7 @@ class TimerViewModel(
 
     fun setPhase(phase: TimerPhase) {
         timerJob?.cancel()
+        notificationService.hideTimerProgress()
         val duration = getDurationForPhase(phase)
         _timerState.value = TimerState.Idle(
             phase = phase,
@@ -136,5 +148,6 @@ class TimerViewModel(
     override fun onCleared() {
         super.onCleared()
         timerJob?.cancel()
+        notificationService.hideTimerProgress()
     }
 }
