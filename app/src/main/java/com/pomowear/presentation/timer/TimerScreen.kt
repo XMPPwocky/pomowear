@@ -33,6 +33,7 @@ import androidx.wear.compose.material3.Text
 import com.pomowear.domain.model.TimerPhase
 import com.pomowear.domain.model.TimerState
 import com.pomowear.presentation.components.CircularTimerDisplay
+import com.pomowear.presentation.components.RadialDurationPicker
 
 @Composable
 fun TimerScreen(
@@ -40,6 +41,8 @@ fun TimerScreen(
     onNavigateToSettings: () -> Unit
 ) {
     val timerState by viewModel.timerState.collectAsState()
+    val showDurationPicker by viewModel.showDurationPicker.collectAsState()
+    val selectedDuration by viewModel.selectedDuration.collectAsState()
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -63,68 +66,79 @@ fun TimerScreen(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Circular timer display
-        CircularTimerDisplay(
-            remainingMillis = timerState.remainingMillis,
-            progress = timerState.progress,
-            phase = timerState.phase,
-            modifier = Modifier.size(100.dp)
-        )
+        // Circular timer display or duration picker
+        if (showDurationPicker) {
+            RadialDurationPicker(
+                selectedMinutes = selectedDuration,
+                onDurationSelected = { minutes ->
+                    viewModel.confirmDuration(minutes)
+                }
+            )
+        } else {
+            CircularTimerDisplay(
+                remainingMillis = timerState.remainingMillis,
+                progress = timerState.progress,
+                phase = timerState.phase,
+                modifier = Modifier.size(100.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Control buttons
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Start/Pause button
-            when (timerState) {
-                is TimerState.Running -> {
-                    FilledIconButton(
-                        onClick = { viewModel.pause() }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Pause,
-                            contentDescription = "Pause"
-                        )
+        // Control buttons (only show when picker is hidden)
+        if (!showDurationPicker) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Start/Pause button
+                when (timerState) {
+                    is TimerState.Running -> {
+                        FilledIconButton(
+                            onClick = { viewModel.pause() }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Pause,
+                                contentDescription = "Pause"
+                            )
+                        }
+                    }
+                    else -> {
+                        FilledIconButton(
+                            onClick = { viewModel.start() }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.PlayArrow,
+                                contentDescription = "Start"
+                            )
+                        }
                     }
                 }
-                else -> {
-                    FilledIconButton(
-                        onClick = { viewModel.start() }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.PlayArrow,
-                            contentDescription = "Start"
-                        )
-                    }
+
+                // Reset button
+                FilledTonalIconButton(
+                    onClick = { viewModel.reset() }
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Refresh,
+                        contentDescription = "Reset"
+                    )
                 }
-            }
 
-            // Reset button
-            FilledTonalIconButton(
-                onClick = { viewModel.reset() }
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Refresh,
-                    contentDescription = "Reset"
-                )
-            }
-
-            // Settings button
-            IconButton(
-                onClick = onNavigateToSettings
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Settings,
-                    contentDescription = "Settings"
-                )
+                // Settings button
+                IconButton(
+                    onClick = onNavigateToSettings
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Settings,
+                        contentDescription = "Settings"
+                    )
+                }
             }
         }
 
-        // Phase selection chips (only show when idle or completed)
-        if (timerState is TimerState.Idle || timerState is TimerState.Completed) {
+        // Phase selection chips (only show when idle or completed, and picker not showing)
+        if ((timerState is TimerState.Idle || timerState is TimerState.Completed) && !showDurationPicker) {
             Spacer(modifier = Modifier.height(4.dp))
             Row(
                 horizontalArrangement = Arrangement.spacedBy(4.dp)

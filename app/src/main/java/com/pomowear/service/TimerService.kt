@@ -43,6 +43,8 @@ class TimerService : Service() {
         const val EXTRA_SHORT_BREAK_DURATION = "short_break_duration"
         const val EXTRA_LONG_BREAK_DURATION = "long_break_duration"
         const val EXTRA_TEST_MODE = "test_mode"
+        const val EXTRA_CUSTOM_DURATION = "custom_duration"
+        const val EXTRA_ASK_FOR_WORK_DURATION = "ask_for_work_duration"
 
         private const val CHANNEL_ID = "pomowear_timer_service"
         private const val NOTIFICATION_ID = 1
@@ -58,6 +60,7 @@ class TimerService : Service() {
     private var shortBreakDurationMinutes = 5
     private var longBreakDurationMinutes = 15
     private var testMode = false
+    private var askForWorkDuration = true
 
     private val _timerState = MutableStateFlow<TimerState>(
         TimerState.Idle(
@@ -93,13 +96,23 @@ class TimerService : Service() {
             ACTION_RESET -> resetTimer()
             ACTION_SET_PHASE -> {
                 val phaseOrdinal = intent.getIntExtra(EXTRA_PHASE, 0)
-                setPhase(TimerPhase.entries[phaseOrdinal])
+                val phase = TimerPhase.entries[phaseOrdinal]
+                val customDuration = intent.getLongExtra(EXTRA_CUSTOM_DURATION, -1L)
+
+                if (customDuration > 0) {
+                    // Use custom duration
+                    setPhase(phase, customDuration)
+                } else {
+                    // Use default duration from settings
+                    setPhase(phase)
+                }
             }
             ACTION_UPDATE_SETTINGS -> {
                 workDurationMinutes = intent.getIntExtra(EXTRA_WORK_DURATION, 25)
                 shortBreakDurationMinutes = intent.getIntExtra(EXTRA_SHORT_BREAK_DURATION, 5)
                 longBreakDurationMinutes = intent.getIntExtra(EXTRA_LONG_BREAK_DURATION, 15)
                 testMode = intent.getBooleanExtra(EXTRA_TEST_MODE, false)
+                askForWorkDuration = intent.getBooleanExtra(EXTRA_ASK_FOR_WORK_DURATION, true)
                 // Update idle state if not running
                 val currentState = _timerState.value
                 if (currentState is TimerState.Idle) {
@@ -276,9 +289,13 @@ class TimerService : Service() {
         stopForeground(STOP_FOREGROUND_REMOVE)
     }
 
-    private fun setPhase(phase: TimerPhase) {
+    private fun setPhase(phase: TimerPhase, customDurationMillis: Long? = null) {
         timerJob?.cancel()
-        val duration = getDurationForPhase(phase)
+        val duration = if (customDurationMillis != null) {
+            customDurationMillis
+        } else {
+            getDurationForPhase(phase)
+        }
         _timerState.value = TimerState.Idle(
             phase = phase,
             remainingMillis = duration,

@@ -160,6 +160,32 @@ fun SettingsScreen(
             }
         }
 
+        // Ask for work duration toggle
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { viewModel.toggleAskForWorkDuration(!settings.askForWorkDuration) }
+                    .padding(horizontal = 8.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Ask for work duration",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = if (settings.askForWorkDuration) "ON" else "OFF",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (settings.askForWorkDuration)
+                        MaterialTheme.colorScheme.primary
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
         // Done button
         item {
             Spacer(modifier = Modifier.height(12.dp))

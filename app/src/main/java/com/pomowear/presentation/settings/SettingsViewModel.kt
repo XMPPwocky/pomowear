@@ -43,4 +43,10 @@ class SettingsViewModel(
             settingsDataStore.updateTestMode(enabled)
         }
     }
+
+    fun toggleAskForWorkDuration(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsDataStore.updateAskForWorkDuration(enabled)
+        }
+    }
 }
