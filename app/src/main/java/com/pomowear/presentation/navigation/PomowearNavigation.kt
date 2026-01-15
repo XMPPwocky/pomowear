@@ -1,0 +1,46 @@
+package com.pomowear.presentation.navigation
+
+import androidx.compose.runtime.Composable
+import androidx.wear.compose.navigation.SwipeDismissableNavHost
+import androidx.wear.compose.navigation.composable
+import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
+import com.pomowear.presentation.settings.SettingsScreen
+import com.pomowear.presentation.settings.SettingsViewModel
+import com.pomowear.presentation.timer.TimerScreen
+import com.pomowear.presentation.timer.TimerViewModel
+
+sealed class Screen(val route: String) {
+    data object Timer : Screen("timer")
+    data object Settings : Screen("settings")
+}
+
+@Composable
+fun PomowearNavigation(
+    timerViewModel: TimerViewModel,
+    settingsViewModel: SettingsViewModel
+) {
+    val navController = rememberSwipeDismissableNavController()
+
+    SwipeDismissableNavHost(
+        navController = navController,
+        startDestination = Screen.Timer.route
+    ) {
+        composable(Screen.Timer.route) {
+            TimerScreen(
+                viewModel = timerViewModel,
+                onNavigateToSettings = {
+                    navController.navigate(Screen.Settings.route)
+                }
+            )
+        }
+
+        composable(Screen.Settings.route) {
+            SettingsScreen(
+                viewModel = settingsViewModel,
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+    }
+}
