@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -36,9 +35,6 @@ class MainActivity : ComponentActivity() {
 
         // Request notification permission on Android 13+
         requestNotificationPermission()
-
-        // Keep screen on while app is visible
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         // Initialize dependencies
         settingsDataStore = SettingsDataStore(applicationContext)
