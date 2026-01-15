@@ -14,6 +14,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import com.pomowear.MainActivity
 import com.pomowear.complication.ComplicationUpdaterService
+import com.pomowear.data.datastore.StatsDataStore
 import com.pomowear.domain.model.TimerPhase
 import com.pomowear.domain.model.TimerState
 import kotlinx.coroutines.CoroutineScope
@@ -68,6 +69,7 @@ class TimerService : Service() {
     val timerState: StateFlow<TimerState> = _timerState.asStateFlow()
 
     private lateinit var vibrationService: VibrationService
+    private lateinit var statsDataStore: StatsDataStore
 
     inner class TimerBinder : Binder() {
         fun getService(): TimerService = this@TimerService
@@ -76,6 +78,7 @@ class TimerService : Service() {
     override fun onCreate() {
         super.onCreate()
         vibrationService = VibrationService(applicationContext)
+        statsDataStore = StatsDataStore(applicationContext)
         createNotificationChannels()
         // Start complication updater to sync complications with timer state
         ComplicationUpdaterService.getInstance(this).start()
@@ -233,6 +236,11 @@ class TimerService : Service() {
                 phase = phase,
                 totalMillis = totalMillis
             )
+
+            // Record stats
+            serviceScope.launch {
+                statsDataStore.recordCompletedSession(phase, totalMillis)
+            }
 
             // Stop foreground but keep service running
             stopForeground(STOP_FOREGROUND_REMOVE)

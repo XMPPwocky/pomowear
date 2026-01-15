@@ -6,18 +6,22 @@ import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import com.pomowear.presentation.settings.SettingsScreen
 import com.pomowear.presentation.settings.SettingsViewModel
+import com.pomowear.presentation.stats.StatsScreen
+import com.pomowear.presentation.stats.StatsViewModel
 import com.pomowear.presentation.timer.TimerScreen
 import com.pomowear.presentation.timer.TimerViewModel
 
 sealed class Screen(val route: String) {
     data object Timer : Screen("timer")
     data object Settings : Screen("settings")
+    data object Stats : Screen("stats")
 }
 
 @Composable
 fun PomowearNavigation(
     timerViewModel: TimerViewModel,
-    settingsViewModel: SettingsViewModel
+    settingsViewModel: SettingsViewModel,
+    statsViewModel: StatsViewModel
 ) {
     val navController = rememberSwipeDismissableNavController()
 
@@ -30,6 +34,9 @@ fun PomowearNavigation(
                 viewModel = timerViewModel,
                 onNavigateToSettings = {
                     navController.navigate(Screen.Settings.route)
+                },
+                onNavigateToStats = {
+                    navController.navigate(Screen.Stats.route)
                 }
             )
         }
@@ -37,6 +44,15 @@ fun PomowearNavigation(
         composable(Screen.Settings.route) {
             SettingsScreen(
                 viewModel = settingsViewModel,
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.Stats.route) {
+            StatsScreen(
+                viewModel = statsViewModel,
                 onNavigateBack = {
                     navController.popBackStack()
                 }

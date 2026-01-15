@@ -17,6 +17,7 @@ import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.ShowChart
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -37,7 +38,8 @@ import com.pomowear.presentation.components.CircularTimerDisplay
 @Composable
 fun TimerScreen(
     viewModel: TimerViewModel,
-    onNavigateToSettings: () -> Unit
+    onNavigateToSettings: () -> Unit,
+    onNavigateToStats: () -> Unit
 ) {
     val timerState by viewModel.timerState.collectAsState()
 
@@ -109,6 +111,16 @@ fun TimerScreen(
                 Icon(
                     imageVector = Icons.Rounded.Refresh,
                     contentDescription = "Reset"
+                )
+            }
+
+            // Stats button
+            IconButton(
+                onClick = onNavigateToStats
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.ShowChart,
+                    contentDescription = "Stats"
                 )
             }
 

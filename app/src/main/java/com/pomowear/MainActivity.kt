@@ -10,16 +10,20 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import com.pomowear.data.datastore.SettingsDataStore
+import com.pomowear.data.datastore.StatsDataStore
 import com.pomowear.presentation.navigation.PomowearNavigation
 import com.pomowear.presentation.settings.SettingsViewModel
+import com.pomowear.presentation.stats.StatsViewModel
 import com.pomowear.presentation.timer.TimerViewModel
 import com.pomowear.theme.PomowearTheme
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var settingsDataStore: SettingsDataStore
+    private lateinit var statsDataStore: StatsDataStore
     private lateinit var timerViewModel: TimerViewModel
     private lateinit var settingsViewModel: SettingsViewModel
+    private lateinit var statsViewModel: StatsViewModel
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -38,14 +42,17 @@ class MainActivity : ComponentActivity() {
 
         // Initialize dependencies
         settingsDataStore = SettingsDataStore(applicationContext)
+        statsDataStore = StatsDataStore(applicationContext)
         timerViewModel = TimerViewModel(applicationContext, settingsDataStore)
         settingsViewModel = SettingsViewModel(settingsDataStore)
+        statsViewModel = StatsViewModel(statsDataStore)
 
         setContent {
             PomowearTheme {
                 PomowearNavigation(
                     timerViewModel = timerViewModel,
-                    settingsViewModel = settingsViewModel
+                    settingsViewModel = settingsViewModel,
+                    statsViewModel = statsViewModel
                 )
             }
         }
