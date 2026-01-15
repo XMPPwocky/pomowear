@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Remove
+import androidx.compose.material.icons.rounded.ShowChart
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -32,7 +33,8 @@ import androidx.wear.compose.material3.Text
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToStats: () -> Unit
 ) {
     val settings by viewModel.settings.collectAsState()
     val listState = rememberScalingLazyListState()
@@ -52,6 +54,28 @@ fun SettingsScreen(
                 Text(
                     text = "Settings",
                     textAlign = TextAlign.Center
+                )
+            }
+        }
+
+        // Stats button
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onNavigateToStats() }
+                    .padding(horizontal = 8.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "View Stats",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Icon(
+                    imageVector = Icons.Rounded.ShowChart,
+                    contentDescription = "Stats"
                 )
             }
         }

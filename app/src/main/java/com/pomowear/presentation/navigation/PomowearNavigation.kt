@@ -34,9 +34,6 @@ fun PomowearNavigation(
                 viewModel = timerViewModel,
                 onNavigateToSettings = {
                     navController.navigate(Screen.Settings.route)
-                },
-                onNavigateToStats = {
-                    navController.navigate(Screen.Stats.route)
                 }
             )
         }
@@ -46,6 +43,9 @@ fun PomowearNavigation(
                 viewModel = settingsViewModel,
                 onNavigateBack = {
                     navController.popBackStack()
+                },
+                onNavigateToStats = {
+                    navController.navigate(Screen.Stats.route)
                 }
             )
         }
