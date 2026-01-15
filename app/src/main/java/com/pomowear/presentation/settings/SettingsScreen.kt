@@ -1,5 +1,6 @@
 package com.pomowear.presentation.settings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -22,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.material3.Button
-import androidx.wear.compose.material3.Checkbox
 import androidx.wear.compose.material3.FilledTonalIconButton
 import androidx.wear.compose.material3.Icon
 import androidx.wear.compose.material3.ListHeader
@@ -116,7 +116,8 @@ fun SettingsScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
+                    .clickable { viewModel.toggleTestMode(!settings.testMode) }
+                    .padding(horizontal = 8.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -124,9 +125,13 @@ fun SettingsScreen(
                     text = "Test mode (10s)",
                     style = MaterialTheme.typography.bodyMedium
                 )
-                Checkbox(
-                    checked = settings.testMode,
-                    onCheckedChange = { viewModel.toggleTestMode(it) }
+                Text(
+                    text = if (settings.testMode) "ON" else "OFF",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (settings.testMode)
+                        MaterialTheme.colorScheme.primary
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

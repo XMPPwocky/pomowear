@@ -13,6 +13,7 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import com.pomowear.MainActivity
+import com.pomowear.complication.ComplicationUpdaterService
 import com.pomowear.domain.model.TimerPhase
 import com.pomowear.domain.model.TimerState
 import kotlinx.coroutines.CoroutineScope
@@ -76,6 +77,8 @@ class TimerService : Service() {
         super.onCreate()
         vibrationService = VibrationService(applicationContext)
         createNotificationChannels()
+        // Start complication updater to sync complications with timer state
+        ComplicationUpdaterService.getInstance(this).start()
     }
 
     override fun onBind(intent: Intent?): IBinder = binder
@@ -314,5 +317,7 @@ class TimerService : Service() {
         super.onDestroy()
         timerJob?.cancel()
         serviceScope.cancel()
+        // Stop complication updater
+        ComplicationUpdaterService.getInstance(this).stop()
     }
 }
