@@ -37,4 +37,10 @@ class SettingsViewModel(
             settingsDataStore.updateLongBreakDuration(minutes)
         }
     }
+
+    fun toggleTestMode(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsDataStore.updateTestMode(enabled)
+        }
+    }
 }

@@ -74,6 +74,7 @@ class TimerViewModel(
             putExtra(TimerService.EXTRA_WORK_DURATION, settings.workDurationMinutes)
             putExtra(TimerService.EXTRA_SHORT_BREAK_DURATION, settings.shortBreakDurationMinutes)
             putExtra(TimerService.EXTRA_LONG_BREAK_DURATION, settings.longBreakDurationMinutes)
+            putExtra(TimerService.EXTRA_TEST_MODE, settings.testMode)
         }
         context.startService(intent)
     }

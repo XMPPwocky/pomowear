@@ -3,6 +3,7 @@ package com.pomowear.data.datastore
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -18,13 +19,15 @@ class SettingsDataStore(private val context: Context) {
         private val WORK_DURATION = intPreferencesKey("work_duration_minutes")
         private val SHORT_BREAK_DURATION = intPreferencesKey("short_break_duration_minutes")
         private val LONG_BREAK_DURATION = intPreferencesKey("long_break_duration_minutes")
+        private val TEST_MODE = booleanPreferencesKey("test_mode")
     }
 
     val settingsFlow: Flow<PomodoroSettings> = context.dataStore.data.map { prefs ->
         PomodoroSettings(
             workDurationMinutes = prefs[WORK_DURATION] ?: 25,
             shortBreakDurationMinutes = prefs[SHORT_BREAK_DURATION] ?: 5,
-            longBreakDurationMinutes = prefs[LONG_BREAK_DURATION] ?: 15
+            longBreakDurationMinutes = prefs[LONG_BREAK_DURATION] ?: 15,
+            testMode = prefs[TEST_MODE] ?: false
         )
     }
 
@@ -43,6 +46,12 @@ class SettingsDataStore(private val context: Context) {
     suspend fun updateLongBreakDuration(minutes: Int) {
         context.dataStore.edit { prefs ->
             prefs[LONG_BREAK_DURATION] = minutes
+        }
+    }
+
+    suspend fun updateTestMode(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[TEST_MODE] = enabled
         }
     }
 }

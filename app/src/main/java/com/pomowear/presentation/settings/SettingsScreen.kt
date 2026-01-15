@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.material3.Button
+import androidx.wear.compose.material3.Checkbox
 import androidx.wear.compose.material3.FilledTonalIconButton
 import androidx.wear.compose.material3.Icon
 import androidx.wear.compose.material3.ListHeader
@@ -107,6 +108,27 @@ fun SettingsScreen(
                     }
                 }
             )
+        }
+
+        // Test mode toggle
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Test mode (10s)",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Checkbox(
+                    checked = settings.testMode,
+                    onCheckedChange = { viewModel.toggleTestMode(it) }
+                )
+            }
         }
 
         // Done button

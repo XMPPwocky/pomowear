@@ -40,6 +40,7 @@ class TimerService : Service() {
         const val EXTRA_WORK_DURATION = "work_duration"
         const val EXTRA_SHORT_BREAK_DURATION = "short_break_duration"
         const val EXTRA_LONG_BREAK_DURATION = "long_break_duration"
+        const val EXTRA_TEST_MODE = "test_mode"
 
         private const val CHANNEL_ID = "pomowear_timer_service"
         private const val NOTIFICATION_ID = 1
@@ -54,6 +55,7 @@ class TimerService : Service() {
     private var workDurationMinutes = 25
     private var shortBreakDurationMinutes = 5
     private var longBreakDurationMinutes = 15
+    private var testMode = false
 
     private val _timerState = MutableStateFlow<TimerState>(
         TimerState.Idle(
@@ -91,6 +93,7 @@ class TimerService : Service() {
                 workDurationMinutes = intent.getIntExtra(EXTRA_WORK_DURATION, 25)
                 shortBreakDurationMinutes = intent.getIntExtra(EXTRA_SHORT_BREAK_DURATION, 5)
                 longBreakDurationMinutes = intent.getIntExtra(EXTRA_LONG_BREAK_DURATION, 15)
+                testMode = intent.getBooleanExtra(EXTRA_TEST_MODE, false)
                 // Update idle state if not running
                 val currentState = _timerState.value
                 if (currentState is TimerState.Idle) {
@@ -274,15 +277,14 @@ class TimerService : Service() {
     }
 
     private fun getDurationForPhase(phase: TimerPhase): Long {
-        // TODO: Remove this - 10 seconds for testing
-        return 10 * 1000L
-
-        // Original code:
-        // return when (phase) {
-        //     TimerPhase.WORK -> workDurationMinutes * 60 * 1000L
-        //     TimerPhase.SHORT_BREAK -> shortBreakDurationMinutes * 60 * 1000L
-        //     TimerPhase.LONG_BREAK -> longBreakDurationMinutes * 60 * 1000L
-        // }
+        if (testMode) {
+            return 10 * 1000L // 10 seconds for testing
+        }
+        return when (phase) {
+            TimerPhase.WORK -> workDurationMinutes * 60 * 1000L
+            TimerPhase.SHORT_BREAK -> shortBreakDurationMinutes * 60 * 1000L
+            TimerPhase.LONG_BREAK -> longBreakDurationMinutes * 60 * 1000L
+        }
     }
 
     private fun showCompletionNotification(phase: TimerPhase) {
