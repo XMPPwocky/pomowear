@@ -219,23 +219,26 @@ class TimerService : Service() {
         timerJob?.cancel()
         timerJob = serviceScope.launch {
             var remaining = remainingMillis
-            var lastNotificationUpdate = remaining
+            var lastTickTime = System.currentTimeMillis()
 
             while (remaining > 0) {
-                delay(100L)
-                remaining -= 100L
+                delay(5000L)
+
+                // Use wall-clock time to prevent drift during Doze mode
+                val now = System.currentTimeMillis()
+                val elapsed = now - lastTickTime
+                lastTickTime = now
+                remaining = (remaining - elapsed).coerceAtLeast(0L)
+
                 _timerState.value = TimerState.Running(
                     phase = phase,
-                    remainingMillis = remaining.coerceAtLeast(0L),
+                    remainingMillis = remaining,
                     totalMillis = totalMillis
                 )
 
-                // Update notification every second
-                if (lastNotificationUpdate - remaining >= 1000L) {
-                    val manager = getSystemService(NotificationManager::class.java)
-                    manager.notify(NOTIFICATION_ID, buildProgressNotification(phase, remaining, totalMillis))
-                    lastNotificationUpdate = remaining
-                }
+                // Update notification every tick (now 5 seconds)
+                val manager = getSystemService(NotificationManager::class.java)
+                manager.notify(NOTIFICATION_ID, buildProgressNotification(phase, remaining, totalMillis))
             }
 
             // Timer completed

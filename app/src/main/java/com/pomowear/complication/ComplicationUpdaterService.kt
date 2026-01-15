@@ -113,7 +113,7 @@ class ComplicationUpdaterService private constructor(
 
     /**
      * Observes TimerService state changes and triggers complication updates.
-     * Uses distinctUntilChanged to avoid redundant updates for the same state.
+     * Uses distinctUntilChanged and throttling to avoid battery-draining update floods.
      */
     private fun observeTimerState() {
         val service = timerService
@@ -124,22 +124,30 @@ class ComplicationUpdaterService private constructor(
 
         serviceScope.launch {
             try {
-                // Observe state changes and trigger updates
-                // Map to a simpler representation to detect meaningful changes
+                var lastUpdateTime = 0L
+                val minUpdateIntervalMs = 60_000L  // 1 minute minimum between running updates
+
                 service.timerState
                     .map { state ->
-                        // Create a data class representing the complication-relevant state
                         StateSnapshot(
                             stateType = state::class.simpleName ?: "Unknown",
                             phase = state.phase,
-                            progress = state.progress,
-                            remainingMillis = state.remainingMillis
+                            // Quantize progress to 5% increments (0-20) to reduce noise
+                            progressPercent = (state.progress * 20).toInt()
                         )
                     }
                     .distinctUntilChanged()
                     .collect { snapshot ->
-                        Log.d(TAG, "Timer state changed: $snapshot")
-                        requestComplicationUpdate()
+                        val now = System.currentTimeMillis()
+                        val isRunning = snapshot.stateType == "Running"
+
+                        // Always update immediately on state type or phase changes
+                        // Throttle during Running state to once per minute
+                        if (!isRunning || (now - lastUpdateTime >= minUpdateIntervalMs)) {
+                            Log.d(TAG, "Timer state changed: $snapshot")
+                            requestComplicationUpdate()
+                            lastUpdateTime = now
+                        }
                     }
             } catch (e: Exception) {
                 Log.e(TAG, "Error observing timer state", e)
@@ -169,11 +177,11 @@ class ComplicationUpdaterService private constructor(
 
     /**
      * Simplified state snapshot for detecting changes that require complication updates.
+     * Excludes continuously-changing values like remainingMillis to enable effective throttling.
      */
     private data class StateSnapshot(
         val stateType: String,
         val phase: com.pomowear.domain.model.TimerPhase,
-        val progress: Float,
-        val remainingMillis: Long
+        val progressPercent: Int  // 0-20 representing 5% increments
     )
 }
