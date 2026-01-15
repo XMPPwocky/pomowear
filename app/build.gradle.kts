@@ -38,6 +38,12 @@ android {
     buildFeatures {
         compose = true
     }
+
+    testOptions {
+        unitTests.all {
+            it.useJUnitPlatform()
+        }
+    }
 }
 
 dependencies {
@@ -63,4 +69,6 @@ dependencies {
     implementation(libs.coroutines.core)
 
     debugImplementation(libs.compose.ui.tooling)
+
+    testImplementation(libs.junit5)
 }
