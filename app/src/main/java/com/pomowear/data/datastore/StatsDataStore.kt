@@ -10,11 +10,9 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.pomowear.domain.model.DailyStats
 import com.pomowear.domain.model.TimerPhase
+import com.pomowear.util.getCurrentDateString
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 private val Context.statsDataStore: DataStore<Preferences> by preferencesDataStore(name = "pomowear_stats")
 
@@ -32,19 +30,11 @@ class StatsDataStore(private val context: Context) {
     }
 
     /**
-     * Returns current date in yyyy-MM-dd format.
-     */
-    private fun getCurrentDate(): String {
-        val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-        return formatter.format(Date())
-    }
-
-    /**
      * Flow of daily stats that automatically resets when date changes.
      */
     val statsFlow: Flow<DailyStats> = context.statsDataStore.data
         .map { preferences ->
-            val currentDate = getCurrentDate()
+            val currentDate = getCurrentDateString()
             val storedDate = preferences[LAST_UPDATED_DATE] ?: currentDate
 
             if (storedDate != currentDate) {
@@ -68,7 +58,7 @@ class StatsDataStore(private val context: Context) {
      */
     suspend fun recordCompletedSession(phase: TimerPhase, durationMillis: Long) {
         context.statsDataStore.edit { preferences ->
-            val currentDate = getCurrentDate()
+            val currentDate = getCurrentDateString()
             val storedDate = preferences[LAST_UPDATED_DATE] ?: currentDate
 
             if (storedDate != currentDate) {

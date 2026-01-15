@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
+import com.pomowear.util.formatTime
 
 class TimerService : Service() {
 
@@ -185,12 +185,6 @@ class TimerService : Service() {
             .setLocalOnly(true)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .build()
-    }
-
-    private fun formatTime(millis: Long): String {
-        val minutes = TimeUnit.MILLISECONDS.toMinutes(millis)
-        val seconds = TimeUnit.MILLISECONDS.toSeconds(millis) % 60
-        return "%02d:%02d".format(minutes, seconds)
     }
 
     private fun startTimer() {

@@ -4,12 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pomowear.data.datastore.StatsDataStore
 import com.pomowear.domain.model.DailyStats
+import com.pomowear.util.getCurrentDateString
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 /**
  * ViewModel for the stats screen.
@@ -26,11 +24,6 @@ class StatsViewModel(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = DailyStats(date = getCurrentDate())
+            initialValue = DailyStats(date = getCurrentDateString())
         )
-
-    private fun getCurrentDate(): String {
-        val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-        return formatter.format(Date())
-    }
 }

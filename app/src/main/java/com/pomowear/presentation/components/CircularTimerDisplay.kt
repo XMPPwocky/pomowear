@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.Text
 import com.pomowear.domain.model.TimerPhase
-import java.util.concurrent.TimeUnit
+import com.pomowear.util.formatTime
 
 @Composable
 fun CircularTimerDisplay(
@@ -70,10 +70,4 @@ fun CircularTimerDisplay(
             color = MaterialTheme.colorScheme.onSurface
         )
     }
-}
-
-private fun formatTime(millis: Long): String {
-    val minutes = TimeUnit.MILLISECONDS.toMinutes(millis)
-    val seconds = TimeUnit.MILLISECONDS.toSeconds(millis) % 60
-    return "%02d:%02d".format(minutes, seconds)
 }
