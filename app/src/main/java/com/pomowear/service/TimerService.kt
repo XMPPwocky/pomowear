@@ -6,10 +6,12 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
 import com.pomowear.MainActivity
 import com.pomowear.domain.model.TimerPhase
 import com.pomowear.domain.model.TimerState
@@ -111,10 +113,10 @@ class TimerService : Service() {
             val serviceChannel = NotificationChannel(
                 CHANNEL_ID,
                 "Timer Service",
-                NotificationManager.IMPORTANCE_LOW
+                NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
                 description = "Shows timer progress"
-                setShowBadge(false)
+                setShowBadge(true)
             }
             manager.createNotificationChannel(serviceChannel)
 
@@ -154,9 +156,12 @@ class TimerService : Service() {
             .setProgress(100, progress, false)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
-            .setSilent(true)
             .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             .setContentIntent(getPendingIntent())
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+            .setLocalOnly(true)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .build()
     }
 
@@ -188,7 +193,12 @@ class TimerService : Service() {
         )
 
         // Start as foreground service
-        startForeground(NOTIFICATION_ID, buildProgressNotification(phase, remainingMillis, totalMillis))
+        ServiceCompat.startForeground(
+            this,
+            NOTIFICATION_ID,
+            buildProgressNotification(phase, remainingMillis, totalMillis),
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+        )
 
         timerJob?.cancel()
         timerJob = serviceScope.launch {
@@ -264,11 +274,15 @@ class TimerService : Service() {
     }
 
     private fun getDurationForPhase(phase: TimerPhase): Long {
-        return when (phase) {
-            TimerPhase.WORK -> workDurationMinutes * 60 * 1000L
-            TimerPhase.SHORT_BREAK -> shortBreakDurationMinutes * 60 * 1000L
-            TimerPhase.LONG_BREAK -> longBreakDurationMinutes * 60 * 1000L
-        }
+        // TODO: Remove this - 10 seconds for testing
+        return 10 * 1000L
+
+        // Original code:
+        // return when (phase) {
+        //     TimerPhase.WORK -> workDurationMinutes * 60 * 1000L
+        //     TimerPhase.SHORT_BREAK -> shortBreakDurationMinutes * 60 * 1000L
+        //     TimerPhase.LONG_BREAK -> longBreakDurationMinutes * 60 * 1000L
+        // }
     }
 
     private fun showCompletionNotification(phase: TimerPhase) {
@@ -286,6 +300,8 @@ class TimerService : Service() {
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setContentIntent(getPendingIntent())
             .setAutoCancel(true)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setLocalOnly(true)
             .build()
 
         val manager = getSystemService(NotificationManager::class.java)
